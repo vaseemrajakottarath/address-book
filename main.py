@@ -58,7 +58,11 @@ def get_addresses(db: Session = Depends(get_db)):
 #Retrieve details of a specific address
 @app.get("/addresses/{address_id}", response_model=schemas.Address)
 def get_address(address_id: int, db: Session = Depends(get_db)):
-    return db.query(AddressDB).filter(AddressDB.id == address_id).first()
+    db_address = db.query(AddressDB).filter(AddressDB.id == address_id).first()
+    if db_address:
+        return db_address
+    else:
+        raise HTTPException(status_code=400, detail="Invalid address id")
 
 #Retrieve address based on lat,long and within distance
 @app.get("/addresses/nearby/", response_model=List[schemas.Address])
@@ -81,19 +85,7 @@ def get_addresses_nearby(
     )
     return nearby_addresses
 
-# @app.put("/addresses/{address_id}", response_model=schemas.Address)
-# def update_address(
-#     address_id: int, address_data: schemas.AddressUpdate, db: Session = Depends(get_db)
-# ):
-#     db_address = db.query(AddressDB).filter(AddressDB.id == address_id).first()
-#     if not db_address:
-#         raise HTTPException(status_code=404, detail="Address not found")
-#     for field, value in address_data.dict().items():
-#         setattr(db_address, field, value)
-#     db.commit()
-#     db.refresh(db_address)
-#     return db_address
-
+#Update street,city and state
 @app.put("/addresses/{address_id}",response_model = schemas.AddressCreate)
 def update_address(address_id :int,address_data:schemas.AddressCreate,db: Session =Depends(get_db)):
 
@@ -118,6 +110,7 @@ def update_address(address_id :int,address_data:schemas.AddressCreate,db: Sessio
     db.refresh(db_address)
     return db_address
 
+#delete address by id
 @app.delete("/delete_address/{address_id}")
 def delete_address(address_id :int ,db:Session=Depends(get_db)):
 
