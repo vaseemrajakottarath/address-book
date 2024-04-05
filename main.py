@@ -76,15 +76,15 @@ def get_addresses_nearby(
     nearby_addresses = (
         db.query(AddressDB)
         .filter(
-            func.sqrt(
+            (
                 func.pow(AddressDB.latitude - lat, 2) +
                 func.pow(AddressDB.longitude - lon, 2)
-            ) <= distance / 111.12  # Convert distance from kilometers to degrees (approximately 111.12 km per degree of latitude)
+            ) <= (distance / 111.12) **2 
         )
         .all()
     )
     return nearby_addresses
-
+    
 #Update street,city and state
 @app.put("/addresses/{address_id}",response_model = schemas.AddressCreate)
 def update_address(address_id :int,address_data:schemas.AddressCreate,db: Session =Depends(get_db)):
